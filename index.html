@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Simple Sheet PRO</title> 
     
-<meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SimpleCalc">
     
@@ -131,9 +131,10 @@
                     <button class="mode-button" id="addBtnSeq" style="background:#28a745; color:white;" onclick="addRowSimple()">+ Row</button>
                     <button class="mode-button" id="copyBtnSeq" style="background:#007bff; color:white;" onclick="copyPage('custom')">Copy All</button>
                 </div>
-                <div style="margin-top: 15px; padding: 20px; border: 3px solid #28a745; border-radius: 12px; background:#e6ffed; text-align: center;">
+                <div style="margin-top: 15px; padding: 20px; border: 3px solid #28a745; border-radius: 12px; background:#e6ffed; text-align: center; cursor: pointer;" onclick="copyFinalResult()">
                     <div id="finalTotalLabel" style="font-weight: bold; font-size: 1.1em; color: #28a745;">Final Total</div>
                     <div id="finalResultTextCustom" style="font-size: 2.8em; font-weight: bold; color: #28a745;">0</div>
+                    <small style="color:#28a745; opacity:0.6;">(Tap to Copy)</small>
                 </div>
             </div>
         </div>
@@ -167,23 +168,27 @@
     </div>
 
     <script>
-        // サービスワーカーの登録
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
+        // サービスワーカー、計算ロジック、言語等（PRO版のオリジナルロジック）
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
         let currentCalc = "0";
         function calcInput(v) { if(currentCalc === "0" && !isNaN(v)) currentCalc = v; else currentCalc += v; document.getElementById('calcDisplay').value = currentCalc; }
         function calcClear() { currentCalc = "0"; document.getElementById('calcDisplay').value = currentCalc; }
         function calcResult() { try { currentCalc = eval(currentCalc).toString(); } catch(e) { currentCalc = "Error"; } document.getElementById('calcDisplay').value = currentCalc; }
         function copyCalcResult() { const val = document.getElementById('calcDisplay').value; if(val === "Error") return; navigator.clipboard.writeText(val); showMsg(languageMap[currentLanguage].copyMsg); }
-        function toggleCalc() { const el = document.getElementById('sideCalc'); el.classList.toggle('active'); }
+        
+        // ★新規追加：最終合計コピー用関数★
+        function copyFinalResult() { 
+            const val = document.getElementById('finalResultTextCustom').textContent.replace(/,/g, ''); 
+            navigator.clipboard.writeText(val); 
+            showMsg(languageMap[currentLanguage].copyMsg); 
+        }
 
         const languageMap = {
             en: { title: "Simple Sheet PRO", modeInd: "Independent", modeSeq: "Sequential", masterLabelName: "Name:", masterLabelStart: "Base Value", savePreset: "Save", finalTotal: "Final Total", copyMsg: "Copied!", btnClear: "Clear", btnExport: "Exp", btnImport: "Imp", btnReset: "Reset", confirmReset: "Reset all?", promptImport: "Paste data:", addRow: "+ Row", copyAll: "Copy All", loadInd: "-- Load --", loadSeq: "-- Load --", calcTitle: "Calculator" },
             ja: { title: "シンプルシート PRO", modeInd: "独立計算", modeSeq: "連続計算", masterLabelName: "計算名:", masterLabelStart: "元の数字", savePreset: "保存", finalTotal: "最終合計", copyMsg: "コピー完了", btnClear: "クリア", btnExport: "出力", btnImport: "読込", btnReset: "初期化", confirmReset: "全削除しますか？", promptImport: "データを貼り付けてください:", addRow: "+ 行追加", copyAll: "全コピー", loadInd: "-- 読込 --", loadSeq: "-- 読込 --", calcTitle: "電卓" },
             zh: { title: "简单计算表 PRO", modeInd: "独立计算", modeSeq: "连续计算", masterLabelName: "名称:", masterLabelStart: "初始值", savePreset: "保存", finalTotal: "最终合计", copyMsg: "已复制", btnClear: "清除", btnExport: "导出", btnImport: "导入", btnReset: "重置", confirmReset: "重置数据？", promptImport: "粘贴数据:", addRow: "+ 添加行", copyAll: "复制全部", loadInd: "-- 独立 --", loadSeq: "-- 连续 --", calcTitle: "计算器" },
-            ko: { title: "심플 시트 PRO", modeInd: "독립 계산", modeSeq: "연속 계산", masterLabelName: "이름:", masterLabelStart: "기준 숫자", savePreset: "저장", finalTotal: "최종 합계", copyMsg: "복사됨", btnClear: "지우기", btnExport: "내보내기", btnImport: "가져오기", btnReset: "초기화", confirmReset: "초기화할까요?", promptImport: "데이터를 붙여넣으세요:", addRow: "+ 행 추가", copyAll: "전체 복사", loadInd: "-- 독립 --", loadSeq: "-- 연속 --", calcTitle: "계산기" },
+            ko: { title: "심플 시트 PRO", modeInd: "독립 계산", modeSeq: "연속 계산", masterLabelName: "이름:", masterLabelStart: "기준 숫자", savePreset: "저장", finalTotal: "최종 합계", copyMsg: "복사됨", btnClear: "지우기", btnExport: "내보내기", btnImport: "가져오기", btnReset: "초기화", confirmReset: "초기화할까요?", promptImport: "데이터를 붙여넣으세요:", addRow: "+ 행 추가", copyAll: "전체 복사", loadInd: "-- 독립 --", loadSeq: "-- 연속 --", calcTitle: "计算器" },
             es: { title: "Hoja Simple PRO", modeInd: "Independiente", modeSeq: "Secuencial", masterLabelName: "Nombre:", masterLabelStart: "Valor Base", savePreset: "Guardar", finalTotal: "Total Final", copyMsg: "¡Copiado!", btnClear: "Limpiar", btnExport: "Exp", btnImport: "Imp", btnReset: "Reset", confirmReset: "¿Reiniciar?", promptImport: "Pegue datos:", addRow: "+ Fila", copyAll: "Todo", loadInd: "-- Cargar --", loadSeq: "-- Cargar --", calcTitle: "Calculadora" },
             fr: { title: "Feuille Simple PRO", modeInd: "Indépendant", modeSeq: "Séquentiel", masterLabelName: "Nom:", masterLabelStart: "Valeur base", savePreset: "Sauver", finalTotal: "Total Final", copyMsg: "Copié !", btnClear: "Effacer", btnExport: "Exp", btnImport: "Imp", btnReset: "Reset", confirmReset: "Reset ?", promptImport: "Collez données:", addRow: "+ Ligne", copyAll: "Tout", loadInd: "-- Ind --", loadSeq: "-- Seq --", calcTitle: "Calculatrice" },
             pt: { title: "Folha Simples PRO", modeInd: "Independente", modeSeq: "Sequencial", masterLabelName: "Nome:", masterLabelStart: "Valor Base", savePreset: "Salvar", finalTotal: "Total Final", copyMsg: "Copiado!", btnClear: "Limpar", btnExport: "Exp", btnImport: "Imp", btnReset: "Reset", confirmReset: "Reset?", promptImport: "Cole dados:", addRow: "+ Linha", copyAll: "Tudo", loadInd: "-- Ind --", loadSeq: "-- Seq --", calcTitle: "Calculadora" }
